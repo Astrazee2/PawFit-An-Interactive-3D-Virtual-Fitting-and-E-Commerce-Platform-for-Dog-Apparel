@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, UserRole, PetProfile } from '../types';
+import { authAPI } from '../services/api'
 
 interface AuthContextType {
   user: User | null;
@@ -22,53 +23,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    if (email === 'admin@pawfit.com' && password === 'admin') {
-      const adminUser: User = {
-        id: 'admin1',
-        name: 'Admin',
-        email: 'admin@pawfit.com',
-        role: 'admin',
-        petProfiles: [],
-      };
-      setUser(adminUser);
-      localStorage.setItem('pawfit_user', JSON.stringify(adminUser));
-      return true;
-    }
+const login = async (email: string, password: string): Promise<boolean> => {
+  const data = await authAPI.login(email, password)
+  if (data.token) {
+    setUser(data.user)
+    localStorage.setItem('pawfit_user', JSON.stringify(data.user))
+    localStorage.setItem('token', data.token)
+    return true
+  }
+  return false
+}
 
-    const users = JSON.parse(localStorage.getItem('pawfit_users') || '[]');
-    const foundUser = users.find((u: User) => u.email === email && u.id === password);
-
-    if (foundUser) {
-      setUser(foundUser);
-      localStorage.setItem('pawfit_user', JSON.stringify(foundUser));
-      return true;
-    }
-
-    return false;
-  };
-
-  const register = async (name: string, email: string, password: string): Promise<boolean> => {
-    const users = JSON.parse(localStorage.getItem('pawfit_users') || '[]');
-
-    if (users.some((u: User) => u.email === email)) {
-      return false;
-    }
-
-    const newUser: User = {
-      id: password,
-      name,
-      email,
-      role: 'user',
-      petProfiles: [],
-    };
-
-    users.push(newUser);
-    localStorage.setItem('pawfit_users', JSON.stringify(users));
-    setUser(newUser);
-    localStorage.setItem('pawfit_user', JSON.stringify(newUser));
-    return true;
-  };
+const register = async (name: string, email: string, password: string): Promise<boolean> => {
+  const data = await authAPI.register(name, email, password)
+  if (data.token) {
+    setUser(data.user)
+    localStorage.setItem('pawfit_user', JSON.stringify(data.user))
+    localStorage.setItem('token', data.token)
+    return true
+  }
+  return false
+}
 
   const logout = () => {
     setUser(null);

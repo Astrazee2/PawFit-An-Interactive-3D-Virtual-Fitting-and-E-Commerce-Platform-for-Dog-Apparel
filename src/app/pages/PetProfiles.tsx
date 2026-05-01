@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/
 import { PetProfile, Breed, Measurements } from '../types';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { petsAPI } from '../services/api';
 
 const breeds: Breed[] = ['Labrador Retriever', 'Shih Tzu', 'Dachshund', 'Pomeranian', 'Aspin/Mixed'];
 
@@ -21,6 +22,9 @@ export function PetProfiles() {
     measurements: { backLength: 0, neckGirth: 0, chestGirth: 0 },
   });
 
+  // Safety check — always treat petProfiles as an array
+  const petProfiles: PetProfile[] = user?.petProfiles ?? [];
+
   const handleOpenDialog = (pet?: PetProfile) => {
     if (pet) {
       setEditingPet(pet);
@@ -32,7 +36,7 @@ export function PetProfiles() {
     setDialogOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!user) return;
 
     if (!formData.name || !formData.measurements.backLength || !formData.measurements.neckGirth || !formData.measurements.chestGirth) {
@@ -40,31 +44,63 @@ export function PetProfiles() {
       return;
     }
 
-    let updatedProfiles: PetProfile[];
+    try {
+      if (editingPet) {
+        // Update existing pet
+        await petsAPI.updatePet(editingPet.id, {
+          name: formData.name,
+          breed: formData.breed,
+          backLength: formData.measurements.backLength,
+          neckGirth: formData.measurements.neckGirth,
+          chestGirth: formData.measurements.chestGirth,
+        });
 
-    if (editingPet) {
-      updatedProfiles = user.petProfiles.map(p =>
-        p.id === editingPet.id ? { ...editingPet, ...formData } : p
-      );
-      toast.success('Pet profile updated!');
-    } else {
-      const newPet: PetProfile = {
-        id: Date.now().toString(),
-        ...formData,
-      };
-      updatedProfiles = [...user.petProfiles, newPet];
-      toast.success('Pet profile created!');
+        const updatedProfiles = petProfiles.map(p =>
+          p.id === editingPet.id ? { ...editingPet, ...formData } : p
+        );
+        updatePetProfiles(updatedProfiles);
+        toast.success('Pet profile updated!');
+      } else {
+        // Create new pet
+        const newPetData = await petsAPI.createPet({
+          name: formData.name,
+          breed: formData.breed,
+          backLength: formData.measurements.backLength,
+          neckGirth: formData.measurements.neckGirth,
+          chestGirth: formData.measurements.chestGirth,
+        });
+
+        const newPet: PetProfile = {
+          id: newPetData._id,
+          name: newPetData.name,
+          breed: newPetData.breed,
+          measurements: {
+            backLength: newPetData.backLength,
+            neckGirth: newPetData.neckGirth,
+            chestGirth: newPetData.chestGirth,
+          }
+        };
+
+        updatePetProfiles([...petProfiles, newPet]);
+        toast.success('Pet profile created!');
+      }
+    } catch (err) {
+      toast.error('Something went wrong. Please try again.');
     }
 
-    updatePetProfiles(updatedProfiles);
     setDialogOpen(false);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!user) return;
-    const updatedProfiles = user.petProfiles.filter(p => p.id !== id);
-    updatePetProfiles(updatedProfiles);
-    toast.success('Pet profile deleted');
+    try {
+      await petsAPI.deletePet(id);
+      const updatedProfiles = petProfiles.filter(p => p.id !== id);
+      updatePetProfiles(updatedProfiles);
+      toast.success('Pet profile deleted');
+    } catch (err) {
+      toast.error('Failed to delete pet');
+    }
   };
 
   if (!user) {
@@ -88,7 +124,7 @@ export function PetProfiles() {
         </Button>
       </div>
 
-      {user.petProfiles.length === 0 ? (
+      {petProfiles.length === 0 ? (
         <Card className="border-[#E8E4DF]">
           <CardContent className="py-16 text-center">
             <div className="text-8xl mb-4">🐕</div>
@@ -98,7 +134,7 @@ export function PetProfiles() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {user.petProfiles.map(pet => (
+          {petProfiles.map(pet => (
             <Card key={pet.id} className="border-[#E8E4DF] rounded-2xl hover:shadow-md transition-shadow">
               <CardHeader>
                 <CardTitle className="flex justify-between items-start">
