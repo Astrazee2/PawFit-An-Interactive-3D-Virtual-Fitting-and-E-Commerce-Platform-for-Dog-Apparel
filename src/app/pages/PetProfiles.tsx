@@ -39,11 +39,10 @@ export function PetProfiles() {
   const handleSave = async () => {
     if (!user) return;
 
-    if (!formData.name || !formData.measurements.backLength || !formData.measurements.neckGirth || !formData.measurements.chestGirth) {
-      toast.error('Please fill in all fields');
-      return;
-    }
-
+  if (!formData.name) {
+    toast.error('Please enter your pet\'s name');
+    return;
+  }
     try {
       if (editingPet) {
         // Update existing pet
@@ -157,15 +156,15 @@ export function PetProfiles() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Back Length:</span>
-                    <span className="font-medium">{pet.measurements.backLength} cm</span>
+                    <span className="font-medium">{pet.measurements.backLength ? `${pet.measurements.backLength} cm` : '—'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Neck Girth:</span>
-                    <span className="font-medium">{pet.measurements.neckGirth} cm</span>
+                    <span className="font-medium">{pet.measurements.neckGirth ? `${pet.measurements.neckGirth} cm` : '—'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Chest Girth:</span>
-                    <span className="font-medium">{pet.measurements.chestGirth} cm</span>
+                    <span className="font-medium">{pet.measurements.chestGirth ? `${pet.measurements.chestGirth} cm` : '—'}</span>
                   </div>
                 </div>
               </CardContent>
@@ -205,8 +204,10 @@ export function PetProfiles() {
             </div>
 
             <div>
-              <Label htmlFor="backLength">Back Length (cm)</Label>
-              <Input
+            <p className="text-xs text-gray-500 bg-gray-50 p-3 rounded-md">
+              💡 Measurements are optional but recommended for a more accurate size recommendation.
+            </p>
+            <Label htmlFor="backLength">Back Length (cm) <span className="text-gray-400 text-xs font-normal">— optional</span></Label>              <Input
                 id="backLength"
                 type="number"
                 value={formData.measurements.backLength || ''}
@@ -218,8 +219,7 @@ export function PetProfiles() {
             </div>
 
             <div>
-              <Label htmlFor="neckGirth">Neck Girth (cm)</Label>
-              <Input
+<Label htmlFor="neckGirth">Neck Girth (cm) <span className="text-gray-400 text-xs font-normal">— optional</span></Label>              <Input
                 id="neckGirth"
                 type="number"
                 value={formData.measurements.neckGirth || ''}
@@ -231,7 +231,7 @@ export function PetProfiles() {
             </div>
 
             <div>
-              <Label htmlFor="chestGirth">Chest Girth (cm)</Label>
+<Label htmlFor="chestGirth">Chest Girth (cm) <span className="text-gray-400 text-xs font-normal">— optional</span></Label>
               <Input
                 id="chestGirth"
                 type="number"
