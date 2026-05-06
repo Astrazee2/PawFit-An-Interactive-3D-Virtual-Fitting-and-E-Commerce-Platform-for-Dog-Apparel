@@ -73,7 +73,7 @@ You should see:
 ---
 
 ## 📁 Project Structure
-
+```
 PAWFIT-Backend/
 ├── src/
 │   ├── controllers/
@@ -100,6 +100,7 @@ PAWFIT-Backend/
 ├── .env                           # Environment variables (not in GitHub)
 ├── .gitignore
 └── package.json
+```
 
 ---
 
