@@ -1,4 +1,4 @@
-# 🐾 PawFit VER1
+# 🐾 PawFit Frontend
 
 A virtual pet apparel fitting prototype built with React, Vite, Tailwind CSS, and Three.js. The original Figma prototype is available at https://www.figma.com/design/ks5jZE8rUOhE1oIrD92EAX/PAWFIT-VER1.
 
